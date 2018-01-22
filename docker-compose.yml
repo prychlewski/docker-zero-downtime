@@ -1,0 +1,26 @@
+version: "2"
+services:
+  api:
+    image: rychu/api:1
+    build:
+      context: .
+      dockerfile: ./docker/app-image/Dockerfile
+      args:
+        APP_PATH: ./src
+    volumes:
+      - ./docker/nginx-dev/conf.d:/etc/nginx/conf.d
+
+  lb:
+    image: rychu/haproxy
+    build:
+      context: .
+      dockerfile: ./docker/HAProxy/Dockerfile
+    links:
+      - api
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 80:80
+      - 1936:1936
+    environment:
+      - EXTRA_GLOBAL_SETTINGS=stats socket /var/run/haproxy.sock mode 600 level admin,stats timeout 2m
